@@ -12,12 +12,10 @@ const char*
     ;
 
 char
-    cur_mian_col = 'R' // (R)ed, (G)reen, (B)lue, (Y)ellow
+    cur_mian_col = 'G' // (G)reen, (B)lue, (Y)ellow
     ;
 
 sf::Color
-    R_1(152, 0, 0),
-    R_2(142, 0, 0),
     G_1(0, 122, 0),
     G_2(0, 112, 0),
     B_1(0, 91, 91),
@@ -69,17 +67,14 @@ int main(int argc, const char * argv[]){
                         //window.close();
                         std::cout << "bla121243\n";
                         break;
-                    // q, w, e, r - zmienia colory
+                    // q, w, e - zmienia colory
                     case sf::Keyboard::Q:
-                        cur_mian_col = 'R';
-                        break;
-                    case sf::Keyboard::W:
                         cur_mian_col = 'G';
                         break;
-                    case sf::Keyboard::E:
+                    case sf::Keyboard::W:
                         cur_mian_col = 'B';
                         break;
-                    case sf::Keyboard::R:
+                    case sf::Keyboard::E:
                         cur_mian_col = 'Y';
                         break;
                     default:
@@ -91,10 +86,6 @@ int main(int argc, const char * argv[]){
         }
 
         switch(cur_mian_col){
-            case 'R':
-                board_bg.setFillColor(R_1);
-                info_bg.setFillColor(R_2);
-                break;
             case 'G':
                 board_bg.setFillColor(G_1);
                 info_bg.setFillColor(G_2);
