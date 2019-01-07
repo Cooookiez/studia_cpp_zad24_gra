@@ -28,19 +28,24 @@ sf::Color
 
 int main(int argc, const char * argv[]){
 
-    
+    //serca max, cur
+        int num_of_hearts = 5;
+        int max_live = num_of_hearts*2;
+        int cur_live = max_live;
+    //posytion/size
+        sf::Vector2f pos;
+        float width;
+        float h1, h2, p_;
+        float heart_height, heart_width, hearts_scale=5.f;
 
     sf::RenderWindow window(sf::VideoMode(Width, Height), Title);
+
 
     // Declare and load a font
         sf::Font font;
         font.loadFromFile("fonts/Roboto-Regular.ttf");
 
-        sf::Vector2f pos;
-        float width;
-        float h1, h2, p_;
-    
-    //text
+    // text
         //title
             sf::Text txt_title(Title, font);
             txt_title.setCharacterSize(32);
@@ -89,7 +94,7 @@ int main(int argc, const char * argv[]){
             pos = txt_oth_1.getPosition();  txt_oth_1.setPosition(pos.x + Height + margin, pos.y + margin*7 + h1 + sep_height*2 + h2 + p_*3);
             pos = txt_oth_2.getPosition();  txt_oth_2.setPosition(pos.x + Height + margin, pos.y + margin*8 + h1 + sep_height*2 + h2 + p_*4);
         
-    //separatory
+    // separatory
         sf::RectangleShape sep[2];
         
             sep[0].setSize(sf::Vector2f(Width-Height-32, sep_height));
@@ -100,17 +105,50 @@ int main(int argc, const char * argv[]){
             sep[1].setPosition(Height+16, margin*8 + h1 + sep_height + h2 + p_*2);
             sep[1].setFillColor(sf::Color::Black);
 
+    // serca
+        sf::Texture hearts;
+        sf::Sprite heart_half[num_of_hearts];
+        sf::Sprite heart_whole[num_of_hearts];
+        if( !hearts.loadFromFile("img/serca.png") ) return -1;
+        for( int i = 0; i < num_of_hearts; i++){
+            heart_half[i].setTexture(hearts);
+            heart_whole[i].setTexture(hearts);
 
-    //tlo menu i plaszny
-    sf::RectangleShape board_bg;
-    board_bg.setSize(sf::Vector2f(Height, Height));
-    board_bg.setPosition(0, 0);
+            heart_half[i].setTextureRect(sf::IntRect(16, 0, 32, 16));
+            heart_whole[i].setTextureRect(sf::IntRect(0, 0, 16, 16));
 
-    sf::RectangleShape info_bg;
-    info_bg.setSize(sf::Vector2f(Height-Width, Height));
-    info_bg.setPosition(Width, 0);
+            heart_half[i].setScale(sf::Vector2f(hearts_scale, hearts_scale));
+            heart_whole[i].setScale(sf::Vector2f(hearts_scale, hearts_scale));
 
-    while(window.isOpen()){
+            heart_height = heart_whole[i].getLocalBounds().height;
+            heart_width = heart_whole[i].getLocalBounds().width;
+
+            
+            float to_center = ((Width - Height) - (heart_width*hearts_scale*num_of_hearts + 8*(num_of_hearts-1)))/2; // serca sa na srodku
+            float tmp_x, tmp_y;
+            
+            pos = heart_half[i].getPosition(); 
+            tmp_x = pos.x + Height + to_center + (heart_width*hearts_scale+8)*i;
+            tmp_y = pos.y + margin*8 + h1 + sep_height*4 + h2 + p_*6;
+            heart_half[i].setPosition(tmp_x, tmp_y);
+            
+            pos = heart_whole[i].getPosition(); 
+            tmp_x = pos.x + Height + to_center + (heart_width*hearts_scale+8)*i;
+            tmp_y = pos.y + margin*8 + h1 + sep_height*4 + h2 + p_*6;
+            heart_whole[i].setPosition(tmp_x, tmp_y);
+            
+        }
+
+    // tlo menu i plaszny
+        sf::RectangleShape board_bg;
+        board_bg.setSize(sf::Vector2f(Height, Height));
+        board_bg.setPosition(0, 0);
+
+        sf::RectangleShape info_bg;
+        info_bg.setSize(sf::Vector2f(Height-Width, Height));
+        info_bg.setPosition(Width, 0);
+
+    while(window.isOpen() && cur_live > 0){
 
         //obsluga klawiszy
         sf::Event event;
@@ -130,6 +168,7 @@ int main(int argc, const char * argv[]){
                     // q, w, e - zmienia colory
                     case sf::Keyboard::Q:
                         cur_mian_col = 'G';
+                        cur_live--;
                         break;
                     case sf::Keyboard::W:
                         cur_mian_col = 'B';
@@ -179,6 +218,19 @@ int main(int argc, const char * argv[]){
         window.draw(sep[1]);
         window.draw(txt_oth_1);
         window.draw(txt_oth_2);
+
+        for(int i = 0; i < num_of_hearts; i++){
+            
+            if( i*2 < cur_live-1 ){
+                window.draw(heart_whole[i]);
+            }else if( i*2 == cur_live-1 ){
+                if( cur_live%2 )
+                    window.draw(heart_half[i]);
+                else
+                    window.draw(heart_whole[i]);
+            }
+        }
+        std::cout << "\n\n\n";
 
         window.display();
 
