@@ -1,45 +1,138 @@
 #include <iostream>
+#include <vector>
 #include <SFML/Window.hpp>
 #include <SFML/Graphics.hpp>
 
-const int
-    Width = 1400,
-    Height = 900,
-    sep_height = 4,
-    margin = 16
-    ;
+using namespace std;
 
-const char*
-    Title = "Color switch THE GAME"
-    ;
-
-char
-    cur_mian_col = 'G' // (G)reen, (B)lue, (Y)ellow
-    ;
-
-sf::Color
-    G_1(0, 122, 0),
-    G_2(0, 112, 0),
-    B_1(0, 91, 91),
-    B_2(0, 81, 81),
-    Y_1(152, 140, 0),
-    Y_2(142, 130, 0)
-    ;
+class Pocisk{
+    
+    public: 
+        int x, y, r, vx, vy;
+        sf::Color color;
+        sf::CircleShape pocisk;
+        
+        Pocisk(float x, float y, float vx, float vy, float r, sf::Color color){
+            this->x = x - r;
+            this->y = y - r;
+            this->r = r;
+            this->vx = vx;
+            this->vy = vy;
+            this->pocisk.setRadius(r);
+            this->pocisk.setFillColor(color);
+            this->pocisk.setPosition(this->x, this->y);
+        }
+        void move(){
+            this->x += this->vx;
+            this->y += this->vy;
+            this->pocisk.setPosition(this->x, this->y);
+        }
+        bool pozaOknem(float height, float width){
+            if(
+                this->x < 0 ||
+                this->x + 2*this->r > height ||
+                this->y < 0 ||
+                this->y + 2*this->r > width
+            ){
+                return true;
+            }
+            return false;
+        }
+};
 
 int main(int argc, const char * argv[]){
+
+    sf::Vector2f pos;
+    float tmp_x, tmp_y;
+
+    vector<Pocisk> pociks;
+
+    // pociks.push_back(Pocisk(6));
+    // pociks.push_back(Pocisk(3));
+    // pociks.push_back(Pocisk());
+
+    // for(auto i = pociks.begin(); i < pociks.end(); i++){
+    //     cout << i->x << endl;
+    // }
+    
+    // return 1;
+
+    const int
+        Width = 1400,
+        Height = 900,
+        sep_height = 4,
+        margin = 16
+        ;
+
+    const char*
+        Title = "Color switch THE GAME"
+        ;
+
+    char
+        cur_mian_col = 'G' // (G)reen, (B)lue, (Y)ellow
+        ;
+
+    bool inGame = true;
+
+    // POSTAC
+        int POSTACIE_SCALE = 5;
+        //kierunek ruchu
+            int postac_kierunek = 8;
+            float postac_v = 10;
+            float _dx = .7;
+            float _dy = _dx;
+            float dx = 0;
+            float dy = 0;
+            /*
+                kierunki jak na klawiaturze numerycznej
+                |   N   |  =>  |   8   | 
+                | W   E |  =>  | 4   6 |
+                |   S   |  =>  |   2   |
+                ale sterowane strzalkami
+            */
+        //grafika
+            sf::Texture postac_texture;
+            if( !postac_texture.loadFromFile("img/postac.png")) return -1;
+            sf::Sprite postac;
+            postac.setTexture(postac_texture);
+            postac.setTextureRect(sf::IntRect(16, 0, 16, 16));
+            postac.setScale(sf::Vector2f(POSTACIE_SCALE, POSTACIE_SCALE));
+            int postac_height = postac.getLocalBounds().height*POSTACIE_SCALE;
+            int postac_width = postac.getLocalBounds().width*POSTACIE_SCALE;
+
+            pos = postac.getPosition();
+            tmp_x = pos.x + Height/2 - postac_width/2;
+            tmp_y = pos.y + Height/2 - postac_height/2;
+            postac.setPosition(tmp_x, tmp_y);
+
+            // kier_up.setTextureRect(sf::IntRect(16, 0, 16, 16));
+            // kier_down.setTextureRect(sf::IntRect(16, 0, 16, 16));
+            // kier_left.setTextureRect(sf::IntRect(16, 0, 16, 16));
+            // kier_right.setTextureRect(sf::IntRect(16, 0, 16, 16));
+
+            // kier_up.setScale(sf::Vector2f(POSTACIE_SCALE, POSTACIE_SCALE));
+            // kier_left.setScale(sf::Vector2f(POSTACIE_SCALE, POSTACIE_SCALE));
+            // kier_right.setScale(sf::Vector2f(POSTACIE_SCALE, POSTACIE_SCALE));
+        
+    sf::Color
+        G_1(0, 122, 0),
+        G_2(0, 112, 0),
+        B_1(0, 91, 91),
+        B_2(0, 81, 81),
+        Y_1(152, 140, 0),
+        Y_2(142, 130, 0)
+        ;
 
     //serca max, cur
         int num_of_hearts = 5;
         int max_live = num_of_hearts*2;
         int cur_live = max_live;
     //posytion/size
-        sf::Vector2f pos;
         float width;
         float h1, h2, p_;
         float heart_height, heart_width, hearts_scale=5.f;
 
     sf::RenderWindow window(sf::VideoMode(Width, Height), Title);
-
 
     // Declare and load a font
         sf::Font font;
@@ -114,7 +207,7 @@ int main(int argc, const char * argv[]){
             heart_half[i].setTexture(hearts);
             heart_whole[i].setTexture(hearts);
 
-            heart_half[i].setTextureRect(sf::IntRect(16, 0, 32, 16));
+            heart_half[i].setTextureRect(sf::IntRect(16, 0, 16, 16));
             heart_whole[i].setTextureRect(sf::IntRect(0, 0, 16, 16));
 
             heart_half[i].setScale(sf::Vector2f(hearts_scale, hearts_scale));
@@ -125,7 +218,6 @@ int main(int argc, const char * argv[]){
 
             
             float to_center = ((Width - Height) - (heart_width*hearts_scale*num_of_hearts + 8*(num_of_hearts-1)))/2; // serca sa na srodku
-            float tmp_x, tmp_y;
             
             pos = heart_half[i].getPosition(); 
             tmp_x = pos.x + Height + to_center + (heart_width*hearts_scale+8)*i;
@@ -156,14 +248,15 @@ int main(int argc, const char * argv[]){
 
             //krzyzyk na oknie
             if(event.type == sf::Event::Closed){
-                window.close();
                 std::cout << "bla\n";
+                window.close();
             }
             else if(event.type == sf::Event::KeyPressed){
+                std::cout << event.key.code << std::endl;
                 switch(event.key.code){
                     case sf::Keyboard::Escape:
-                        window.close();
                         std::cout << "bla121243\n";
+                        window.close();
                         break;
                     // q, w, e - zmienia colory
                     case sf::Keyboard::Q:
@@ -176,6 +269,55 @@ int main(int argc, const char * argv[]){
                     case sf::Keyboard::E:
                         cur_mian_col = 'Y';
                         break;
+                    //kierunek lotu
+                    case sf::Keyboard::Up:
+                    case sf::Keyboard::Numpad8:
+                        postac_kierunek = 8;
+                        postac.setTextureRect(sf::IntRect(16, 0, 16, 16));
+                        dx = 0;
+                        dy = -_dy;
+                        break;
+                    case sf::Keyboard::Down:
+                    case sf::Keyboard::Numpad2:
+                        postac_kierunek = 2;
+                        postac.setTextureRect(sf::IntRect(16, 32, 16, 16));
+                        dx = 0;
+                        dy = _dy;
+                        break;
+                    case sf::Keyboard::Left:
+                    case sf::Keyboard::Numpad4:
+                        postac_kierunek = 4;
+                        postac.setTextureRect(sf::IntRect(0, 16, 16, 16));
+                        dx = -_dx;
+                        dy = 0;
+                        break;
+                    case sf::Keyboard::Right:
+                    case sf::Keyboard::Numpad6:
+                        postac_kierunek = 6;
+                        postac.setTextureRect(sf::IntRect(32, 16, 16, 16));
+                        dx = _dx;
+                        dy = 0;
+                        break;
+                    case sf::Keyboard::Space:
+                        cout << "piw paw" << endl;
+                        cout << dx << "\t" << dy << endl;
+                        if( dx != 0 || dy != 0){
+                            switch(cur_mian_col){
+                                case 'G':
+                                    pociks.push_back(Pocisk( postac.getPosition().x + postac_width/2, postac.getPosition().y + postac_height/2, dx*3, dy*3, 10, G_2 ));
+                                    break;
+                                case 'B':
+                                    pociks.push_back(Pocisk( postac.getPosition().x + postac_width/2, postac.getPosition().y + postac_height/2, dx*3, dy*3, 10, B_2 ));
+                                    break;
+                                case 'Y':
+                                    pociks.push_back(Pocisk( postac.getPosition().x + postac_width/2, postac.getPosition().y + postac_height/2, dx*3, dy*3, 10, Y_2 ));
+                                    break;
+                                default:
+                                    break;
+                            }
+                        }
+                        break;
+
                     default:
                         break;
                 }
@@ -201,23 +343,44 @@ int main(int argc, const char * argv[]){
                 break;
         }
 
-
-
-
         window.clear();
 
-        window.draw(board_bg);
-        window.draw(info_bg);
+        //zawsze (bg + title + tips)
+            window.draw(board_bg);
+            window.draw(info_bg);
 
-        window.draw(txt_title);
-        window.draw(sep[0]);
-        window.draw(txt_ster_0);
-        window.draw(txt_ster_1);
-        window.draw(txt_ster_2);
-        window.draw(txt_ster_3);
-        window.draw(sep[1]);
-        window.draw(txt_oth_1);
-        window.draw(txt_oth_2);
+            window.draw(txt_title);
+            window.draw(sep[0]);
+            window.draw(txt_ster_0);
+            window.draw(txt_ster_1);
+            window.draw(txt_ster_2);
+            window.draw(txt_ster_3);
+            window.draw(sep[1]);
+            window.draw(txt_oth_1);
+            window.draw(txt_oth_2);
+
+        //strzały
+            for( auto i = pociks.begin(); i < pociks.end(); i++ ){
+                i->move();
+                window.draw(i->pocisk);
+                if(i->pozaOknem(Height, Width)){
+                    pociks.erase(i);
+                }
+            }
+        //postac
+            if(inGame){
+                // std::cout<<"postac"<<std::endl;
+                window.draw(postac);
+                pos = postac.getPosition();
+                tmp_x = pos.x + dx;
+                tmp_y = pos.y + dy;
+                if(tmp_x < 0) tmp_x = pos.x;
+                else if(tmp_x > Height - postac_width) tmp_x = pos.x;
+                if(tmp_y < 0) tmp_y = pos.y;
+                else if(tmp_y > Height - postac_height) tmp_y = pos.y;
+                postac.setPosition(tmp_x, tmp_y);
+                pos = postac.getPosition();
+            }
 
         for(int i = 0; i < num_of_hearts; i++){
             
@@ -230,7 +393,7 @@ int main(int argc, const char * argv[]){
                     window.draw(heart_whole[i]);
             }
         }
-        std::cout << "\n\n\n";
+        // std::cout << "\n\n\n";
 
         window.display();
 
