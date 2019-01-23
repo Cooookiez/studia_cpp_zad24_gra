@@ -6,13 +6,15 @@
 using namespace std;
 
 class Pocisk{
-    
-    public: 
+    private:
         int x, y, r, vx, vy;
         sf::Color color;
+
+    public: 
         sf::CircleShape pocisk;
+        char c_color;
         
-        Pocisk(float x, float y, float vx, float vy, float r, sf::Color color){
+        Pocisk(float x, float y, float vx, float vy, float r, sf::Color color, char c_color){
             this->x = x - r;
             this->y = y - r;
             this->r = r;
@@ -21,6 +23,7 @@ class Pocisk{
             this->pocisk.setRadius(r);
             this->pocisk.setFillColor(color);
             this->pocisk.setPosition(this->x, this->y);
+            this->c_color = c_color;
         }
         void move(){
             this->x += this->vx;
@@ -40,18 +43,102 @@ class Pocisk{
         }
 };
 
-int main(int argc, const char * argv[]){
+class Przeciwnik{
+    private:
+        float
+            x,
+            y,
+            v,
+            vx,
+            vy,
+            scale,
+            width,
+            height;
+        // sf::Texture przeciwnik_texture;
+        char c_color;
+        int life = 1;
+    public:
+        sf::Sprite przeciwnik_sprite;
+
+        Przeciwnik(float x, float y, float v, float scale, char c_color, sf::Sprite przeciwnik_sprite){
+            this->x = x;
+            this->y = y;
+            this->v = v;
+            this->scale = scale;
+            this->c_color = c_color;
+            this->przeciwnik_sprite = przeciwnik_sprite;
+
+            switch (this->c_color){
+                case 'G': this->przeciwnik_sprite.setTextureRect(sf::IntRect(0, 0, 16, 16)); break;
+                case 'B': this->przeciwnik_sprite.setTextureRect(sf::IntRect(16, 0, 16, 16)); break;
+                case 'Y': this->przeciwnik_sprite.setTextureRect(sf::IntRect(32, 0, 16, 16)); break;
+                default: break;
+            }
+            
+            this->przeciwnik_sprite.setScale(this->scale, this->scale);
+            this->height = this->przeciwnik_sprite.getLocalBounds().height*this->scale;
+            this->width = this->przeciwnik_sprite.getLocalBounds().width*this->scale;
+            this->przeciwnik_sprite.setPosition(x, y);
+            
+        }
+
+        void move(float x, float y){
+            
+        }
+
+        void hit(char c_color_pociks){
+            if( this->c_color == c_color_pociks ){
+                this->life++;
+            }else{
+                this->life--;
+            }
+            this->rescale();
+        }
+
+        void rescale(){
+            float inner_scale = this->life*.25+.75;
+            cout << inner_scale << endl;
+            this->przeciwnik_sprite.setScale(this->scale*inner_scale, this->scale*inner_scale);
+
+            float height = this->przeciwnik_sprite.getLocalBounds().height*this->scale*inner_scale;
+            float width = this->przeciwnik_sprite.getLocalBounds().width*this->scale*inner_scale;
+
+            this->x -= (this->width - width)/2;
+            this->y -= (this->height - height)/2;
+
+            this->width = width;
+            this->height = height;
+
+        }
+
+        bool isALive(){
+            if( this->life > 0 ) return true;
+            return false;
+        }
+
+};
+
+int main(int argc, const char * argv[]){  
 
     sf::Vector2f pos;
     float tmp_x, tmp_y;
 
-    vector<Pocisk> pociks;
+    vector<Pocisk> pocisk;
+    vector<Przeciwnik> przeciwnik;
+    sf::Texture przeciwnik_texture;
+    sf::Sprite przeciwnik_sprite;
+    if( !przeciwnik_texture.loadFromFile("img/przeciwnicy.png") ) return -1;
+    przeciwnik_sprite.setTexture(przeciwnik_texture);
 
-    // pociks.push_back(Pocisk(6));
-    // pociks.push_back(Pocisk(3));
-    // pociks.push_back(Pocisk());
+    przeciwnik.push_back(Przeciwnik(20, 20, .2, 2, 'G', przeciwnik_sprite));
+    przeciwnik.push_back(Przeciwnik(60, 60, .2, 2, 'B', przeciwnik_sprite));
+    przeciwnik.push_back(Przeciwnik(100, 100, .2, 2, 'Y', przeciwnik_sprite));
 
-    // for(auto i = pociks.begin(); i < pociks.end(); i++){
+    // pocisk.push_back(Pocisk(6));
+    // pocisk.push_back(Pocisk(3));
+    // pocisk.push_back(Pocisk());
+
+    // for(auto i = pocisk.begin(); i < pocisk.end(); i++){
     //     cout << i->x << endl;
     // }
     
@@ -105,15 +192,6 @@ int main(int argc, const char * argv[]){
             tmp_y = pos.y + Height/2 - postac_height/2;
             postac.setPosition(tmp_x, tmp_y);
 
-            // kier_up.setTextureRect(sf::IntRect(16, 0, 16, 16));
-            // kier_down.setTextureRect(sf::IntRect(16, 0, 16, 16));
-            // kier_left.setTextureRect(sf::IntRect(16, 0, 16, 16));
-            // kier_right.setTextureRect(sf::IntRect(16, 0, 16, 16));
-
-            // kier_up.setScale(sf::Vector2f(POSTACIE_SCALE, POSTACIE_SCALE));
-            // kier_left.setScale(sf::Vector2f(POSTACIE_SCALE, POSTACIE_SCALE));
-            // kier_right.setScale(sf::Vector2f(POSTACIE_SCALE, POSTACIE_SCALE));
-        
     sf::Color
         G_1(0, 122, 0),
         G_2(0, 112, 0),
@@ -304,13 +382,13 @@ int main(int argc, const char * argv[]){
                         if( dx != 0 || dy != 0){
                             switch(cur_mian_col){
                                 case 'G':
-                                    pociks.push_back(Pocisk( postac.getPosition().x + postac_width/2, postac.getPosition().y + postac_height/2, dx*3, dy*3, 10, G_2 ));
+                                    pocisk.push_back(Pocisk( postac.getPosition().x + postac_width/2, postac.getPosition().y + postac_height/2, dx*3, dy*3, 10, G_2, 'G' ));
                                     break;
                                 case 'B':
-                                    pociks.push_back(Pocisk( postac.getPosition().x + postac_width/2, postac.getPosition().y + postac_height/2, dx*3, dy*3, 10, B_2 ));
+                                    pocisk.push_back(Pocisk( postac.getPosition().x + postac_width/2, postac.getPosition().y + postac_height/2, dx*3, dy*3, 10, B_2, 'B' ));
                                     break;
                                 case 'Y':
-                                    pociks.push_back(Pocisk( postac.getPosition().x + postac_width/2, postac.getPosition().y + postac_height/2, dx*3, dy*3, 10, Y_2 ));
+                                    pocisk.push_back(Pocisk( postac.getPosition().x + postac_width/2, postac.getPosition().y + postac_height/2, dx*3, dy*3, 10, Y_2, 'Y' ));
                                     break;
                                 default:
                                     break;
@@ -359,17 +437,17 @@ int main(int argc, const char * argv[]){
             window.draw(txt_oth_1);
             window.draw(txt_oth_2);
 
-        //strzały
-            for( auto i = pociks.begin(); i < pociks.end(); i++ ){
-                i->move();
-                window.draw(i->pocisk);
-                if(i->pozaOknem(Height, Width)){
-                    pociks.erase(i);
+        if(inGame){
+            //pociski
+                for( auto i = pocisk.begin(); i < pocisk.end(); i++ ){
+                    i->move();
+                    if(i->pozaOknem(Height, Width)){
+                        pocisk.erase(i);
+                        continue;
+                    }
+                    window.draw(i->pocisk);
                 }
-            }
-        //postac
-            if(inGame){
-                // std::cout<<"postac"<<std::endl;
+            //postac
                 window.draw(postac);
                 pos = postac.getPosition();
                 tmp_x = pos.x + dx;
@@ -379,8 +457,31 @@ int main(int argc, const char * argv[]){
                 if(tmp_y < 0) tmp_y = pos.y;
                 else if(tmp_y > Height - postac_height) tmp_y = pos.y;
                 postac.setPosition(tmp_x, tmp_y);
-                pos = postac.getPosition();
-            }
+            //przeciwnicy
+                for( auto i = przeciwnik.begin(); i < przeciwnik.end(); i++ ){
+                    i->move(postac.getPosition().x - postac_width, postac.getPosition().y - postac_height);
+                    //przeciwnik dotknol postac
+                    if( postac.getGlobalBounds().intersects(i->przeciwnik_sprite.getGlobalBounds()) ){
+                        cout << "przeciwnik - postac" << endl;
+                    }else{
+                        for( auto j = pocisk.begin(); j < pocisk.end(); j++ ){
+                            if( i->przeciwnik_sprite.getGlobalBounds().intersects(j->pocisk.getGlobalBounds()) ){
+                                cout << "przeciwnik - pocisk" << endl;
+                                i->hit(j->c_color);
+                                pocisk.erase(j);
+                            }
+                            if( !i->isALive() ){
+                                break;
+                            }
+                        }
+                    }
+                    if( !i->isALive() ){
+                        przeciwnik.erase(i);
+                        continue;
+                    }
+                    window.draw(i->przeciwnik_sprite);
+                }
+        }
 
         for(int i = 0; i < num_of_hearts; i++){
             
