@@ -5,7 +5,33 @@
   * Jeśli broń i trafiony nią przeciwnik mają ten sam kolor, przeciwnikowi dodaje się hp
   * Jeśli kolor się rózni hp się odejmuje
 
+## gra zapisuje
+* [ ] Ilosc serc
+* [ ] Ilość pkt
+* przeciwnikow
+  * [ ] x
+  * [ ] y
+  * [ ] v
+  * [ ] scale
+  * [ ] c_color
+* pocisk
+  * [ ] x
+  * [ ] y
+  * [ ] vx
+  * [ ] vy
+  * [ ] r
+  * [ ] sf::Color
+  * [ ] c_color
+* postac
+  * [ ] x
+  * [ ] y
+  * [ ] dx
+  * [ ] dy
+  * [ ] v
+  * [ ] kierunek
+
 ## Odpalenie
+
 
 Komendy pokoleji
 ~~~bash

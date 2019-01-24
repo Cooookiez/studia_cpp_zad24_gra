@@ -1,5 +1,8 @@
+#include <cstdlib>
 #include <iostream>
 #include <vector>
+#include <cmath>
+#include <string>
 #include <SFML/Window.hpp>
 #include <SFML/Graphics.hpp>
 
@@ -67,7 +70,6 @@ class Przeciwnik{
             this->scale = scale;
             this->c_color = c_color;
             this->przeciwnik_sprite = przeciwnik_sprite;
-
             switch (this->c_color){
                 case 'G': this->przeciwnik_sprite.setTextureRect(sf::IntRect(0, 0, 16, 16)); break;
                 case 'B': this->przeciwnik_sprite.setTextureRect(sf::IntRect(16, 0, 16, 16)); break;
@@ -78,12 +80,24 @@ class Przeciwnik{
             this->przeciwnik_sprite.setScale(this->scale, this->scale);
             this->height = this->przeciwnik_sprite.getLocalBounds().height*this->scale;
             this->width = this->przeciwnik_sprite.getLocalBounds().width*this->scale;
-            this->przeciwnik_sprite.setPosition(x, y);
+            this->przeciwnik_sprite.setPosition(this->x, this->y);
             
         }
 
         void move(float x, float y){
-            
+            float tmp_x = this->x;
+            float tmp_y = this->y;
+            float a = x - (this->x + this->width/2);
+            float b = y - (this->y + this->height/2);
+            float c = pow( a*a + b*b, .5 );
+            this->vx = this->v*(a/c);
+            this->vy = this->v*(b/c);
+            this->x += this->vx;
+            this->y += this->vy;
+            // cout << "v("<<this->vx<<","<<this->vy<<")" << endl;
+            // cout << "P("<<this->x<<","<<this->y<<")" << endl;
+            this->przeciwnik_sprite.setPosition(this->x, this->y);
+            // cout << x << "\t" << y << "\t" << tmp_x << "\t" << tmp_y << "\t" << vx << "\t" << vy << "\t" << this->x << "\t" << this->y << "\t" << endl;
         }
 
         void hit(char c_color_pociks){
@@ -97,14 +111,14 @@ class Przeciwnik{
 
         void rescale(){
             float inner_scale = this->life*.25+.75;
-            cout << inner_scale << endl;
+            // cout << inner_scale << endl;
             this->przeciwnik_sprite.setScale(this->scale*inner_scale, this->scale*inner_scale);
 
             float height = this->przeciwnik_sprite.getLocalBounds().height*this->scale*inner_scale;
             float width = this->przeciwnik_sprite.getLocalBounds().width*this->scale*inner_scale;
 
-            this->x -= (this->width - width)/2;
-            this->y -= (this->height - height)/2;
+            this->x += (this->width - width)/2;
+            this->y += (this->height - height)/2;
 
             this->width = width;
             this->height = height;
@@ -118,31 +132,20 @@ class Przeciwnik{
 
 };
 
-int main(int argc, const char * argv[]){  
+Przeciwnik add_przeciwnik(sf::Sprite sprite, int Height, int Width, char c_color){
+   
+    float tmp_x = rand()%Height;
+    float tmp_y = rand()%Height;
+    float tmp_v = (float)(rand()%3+2)/(float)10;
 
-    sf::Vector2f pos;
-    float tmp_x, tmp_y;
+    return Przeciwnik(tmp_x, tmp_y, tmp_v, 3, c_color, sprite);
+}
 
-    vector<Pocisk> pocisk;
-    vector<Przeciwnik> przeciwnik;
-    sf::Texture przeciwnik_texture;
-    sf::Sprite przeciwnik_sprite;
-    if( !przeciwnik_texture.loadFromFile("img/przeciwnicy.png") ) return -1;
-    przeciwnik_sprite.setTexture(przeciwnik_texture);
-
-    przeciwnik.push_back(Przeciwnik(20, 20, .2, 2, 'G', przeciwnik_sprite));
-    przeciwnik.push_back(Przeciwnik(60, 60, .2, 2, 'B', przeciwnik_sprite));
-    przeciwnik.push_back(Przeciwnik(100, 100, .2, 2, 'Y', przeciwnik_sprite));
-
-    // pocisk.push_back(Pocisk(6));
-    // pocisk.push_back(Pocisk(3));
-    // pocisk.push_back(Pocisk());
-
-    // for(auto i = pocisk.begin(); i < pocisk.end(); i++){
-    //     cout << i->x << endl;
-    // }
+// void save(vector<Pocisk> pocisk, vector<Przeciwnik> przeciwnik, sf::Sprite postac, int score){
     
-    // return 1;
+// }
+
+int main(int argc, const char * argv[]){
 
     const int
         Width = 1400,
@@ -156,20 +159,44 @@ int main(int argc, const char * argv[]){
         ;
 
     char
-        cur_mian_col = 'G' // (G)reen, (B)lue, (Y)ellow
+        cur_mian_col = 'G', // (G)reen, (B)lue, (Y)ellow
+        color
         ;
 
     bool inGame = true;
 
+    int pkt = 0;
+
+    srand(time(NULL));
+
+    sf::Vector2f pos;
+    float tmp_x, tmp_y;
+
+    vector<Pocisk> pocisk;
+
+    vector<Przeciwnik> przeciwnik;
+    sf::Texture przeciwnik_texture;
+    sf::Sprite przeciwnik_sprite;
+    if( !przeciwnik_texture.loadFromFile("img/przeciwnicy.png") ) return -1;
+    przeciwnik_sprite.setTexture(przeciwnik_texture);
+    int ile_p_na_start = rand()%3+3;
+    for( int i = 0; i < ile_p_na_start; i++ ){
+        przeciwnik.push_back(add_przeciwnik(przeciwnik_sprite, Height, Width, "GBY"[rand()%3]));
+    }
+
+    // przeciwnik.push_back(Przeciwnik(20, 20, .2, 2, 'G', przeciwnik_sprite));
+    // przeciwnik.push_back(Przeciwnik(60, 60, .2, 2, 'B', przeciwnik_sprite));
+    // przeciwnik.push_back(Przeciwnik(100, 100, .2, 2, 'Y', przeciwnik_sprite));
+
     // POSTAC
-        int POSTACIE_SCALE = 5;
+        int POSTACIE_SCALE = 3;
         //kierunek ruchu
             int postac_kierunek = 8;
             float postac_v = 10;
             float _dx = .7;
             float _dy = _dx;
             float dx = 0;
-            float dy = 0;
+            float dy = -_dx;
             /*
                 kierunki jak na klawiaturze numerycznej
                 |   N   |  =>  |   8   | 
@@ -179,7 +206,7 @@ int main(int argc, const char * argv[]){
             */
         //grafika
             sf::Texture postac_texture;
-            if( !postac_texture.loadFromFile("img/postac.png")) return -1;
+            if( !postac_texture.loadFromFile("img/postac-2.png")) return -1;
             sf::Sprite postac;
             postac.setTexture(postac_texture);
             postac.setTextureRect(sf::IntRect(16, 0, 16, 16));
@@ -264,6 +291,15 @@ int main(int argc, const char * argv[]){
 
             pos = txt_oth_1.getPosition();  txt_oth_1.setPosition(pos.x + Height + margin, pos.y + margin*7 + h1 + sep_height*2 + h2 + p_*3);
             pos = txt_oth_2.getPosition();  txt_oth_2.setPosition(pos.x + Height + margin, pos.y + margin*8 + h1 + sep_height*2 + h2 + p_*4);
+
+        // pkt
+            string pkt_s;
+            pkt_s = "Pkt: " + to_string(pkt);
+            sf::Text txt_pkt(pkt_s, font);
+            txt_pkt.setCharacterSize(36);
+            txt_pkt.setFillColor(sf::Color::Black);
+            pos = txt_pkt.getPosition();
+            txt_pkt.setPosition(pos.x + Height + margin, pos.y + margin*16 + h1 + sep_height*2 + h2 + p_*5);
         
     // separatory
         sf::RectangleShape sep[2];
@@ -313,12 +349,28 @@ int main(int argc, const char * argv[]){
         sf::RectangleShape board_bg;
         board_bg.setSize(sf::Vector2f(Height, Height));
         board_bg.setPosition(0, 0);
+        board_bg.setFillColor(sf::Color(50, 50, 50));
 
         sf::RectangleShape info_bg;
         info_bg.setSize(sf::Vector2f(Height-Width, Height));
         info_bg.setPosition(Width, 0);
 
+    sf::Clock clock;
+    int ile_czekac;
+
+    // window.setFramerateLimit(1);
+
     while(window.isOpen() && cur_live > 0){
+
+        sf::Time elapsed = clock.getElapsedTime();
+        if( elapsed.asMilliseconds() < 1 ){
+            int max = 2500;
+            int min = 1000;
+            ile_czekac = min+rand()%(max-min+1);
+        }else if( elapsed.asMilliseconds() > ile_czekac ){
+            clock.restart();
+            przeciwnik.push_back(add_przeciwnik(przeciwnik_sprite, Height, Width, "GBY"[rand()%3]));
+        }
 
         //obsluga klawiszy
         sf::Event event;
@@ -326,20 +378,16 @@ int main(int argc, const char * argv[]){
 
             //krzyzyk na oknie
             if(event.type == sf::Event::Closed){
-                std::cout << "bla\n";
                 window.close();
             }
             else if(event.type == sf::Event::KeyPressed){
-                std::cout << event.key.code << std::endl;
                 switch(event.key.code){
                     case sf::Keyboard::Escape:
-                        std::cout << "bla121243\n";
                         window.close();
                         break;
                     // q, w, e - zmienia colory
                     case sf::Keyboard::Q:
                         cur_mian_col = 'G';
-                        cur_live--;
                         break;
                     case sf::Keyboard::W:
                         cur_mian_col = 'B';
@@ -377,8 +425,8 @@ int main(int argc, const char * argv[]){
                         dy = 0;
                         break;
                     case sf::Keyboard::Space:
-                        cout << "piw paw" << endl;
-                        cout << dx << "\t" << dy << endl;
+                        // cout << "piw paw" << endl;
+                        // cout << dx << "\t" << dy << endl;
                         if( dx != 0 || dy != 0){
                             switch(cur_mian_col){
                                 case 'G':
@@ -406,15 +454,15 @@ int main(int argc, const char * argv[]){
 
         switch(cur_mian_col){
             case 'G':
-                board_bg.setFillColor(G_1);
+                // board_bg.setFillColor(G_1);
                 info_bg.setFillColor(G_2);
                 break;
             case 'B':
-                board_bg.setFillColor(B_1);
+                // board_bg.setFillColor(B_1);
                 info_bg.setFillColor(B_2);
                 break;
             case 'Y':
-                board_bg.setFillColor(Y_1);
+                // board_bg.setFillColor(Y_1);
                 info_bg.setFillColor(Y_2);
                 break;
             default:
@@ -436,6 +484,7 @@ int main(int argc, const char * argv[]){
             window.draw(sep[1]);
             window.draw(txt_oth_1);
             window.draw(txt_oth_2);
+            window.draw(txt_pkt);
 
         if(inGame){
             //pociski
@@ -448,29 +497,36 @@ int main(int argc, const char * argv[]){
                     window.draw(i->pocisk);
                 }
             //postac
-                window.draw(postac);
                 pos = postac.getPosition();
                 tmp_x = pos.x + dx;
                 tmp_y = pos.y + dy;
+                // cout << pos.x << "\t" << pos.y << "\t" << tmp_x << "\t" << tmp_y << "\t" << dx << "\t" << dy << endl;
                 if(tmp_x < 0) tmp_x = pos.x;
                 else if(tmp_x > Height - postac_width) tmp_x = pos.x;
                 if(tmp_y < 0) tmp_y = pos.y;
                 else if(tmp_y > Height - postac_height) tmp_y = pos.y;
                 postac.setPosition(tmp_x, tmp_y);
+                window.draw(postac);
             //przeciwnicy
                 for( auto i = przeciwnik.begin(); i < przeciwnik.end(); i++ ){
-                    i->move(postac.getPosition().x - postac_width, postac.getPosition().y - postac_height);
+                    i->move(postac.getPosition().x + postac_width/2, postac.getPosition().y + postac_height/2);
                     //przeciwnik dotknol postac
                     if( postac.getGlobalBounds().intersects(i->przeciwnik_sprite.getGlobalBounds()) ){
-                        cout << "przeciwnik - postac" << endl;
+                        // cout << "przeciwnik - postac" << endl;
+                        cur_live--;
+                        przeciwnik.erase(i);
+                        continue;
                     }else{
                         for( auto j = pocisk.begin(); j < pocisk.end(); j++ ){
                             if( i->przeciwnik_sprite.getGlobalBounds().intersects(j->pocisk.getGlobalBounds()) ){
-                                cout << "przeciwnik - pocisk" << endl;
+                                // cout << "przeciwnik - pocisk" << endl;
                                 i->hit(j->c_color);
                                 pocisk.erase(j);
                             }
                             if( !i->isALive() ){
+                                pkt++;
+                                pkt_s = "Pkt: " + to_string(pkt);
+                                txt_pkt.setString(pkt_s);
                                 break;
                             }
                         }
