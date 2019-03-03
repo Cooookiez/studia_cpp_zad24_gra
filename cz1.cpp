@@ -279,9 +279,10 @@ int main(int argc, const char * argv[]){
             pos = txt_ster_2.getPosition(); txt_ster_2.setPosition(pos.x + Height + margin, pos.y + margin*5 + h1 + sep_height + h2 + p_);
             pos = txt_ster_3.getPosition(); txt_ster_3.setPosition(pos.x + Height + margin, pos.y + margin*6 + h1 + sep_height + h2 + p_*2);
 
-        //od nowa / zapisz i wyjdz
-            sf::Text txt_oth_1("Esc, (x) - Zapisz i wyjdz", font);
-            sf::Text txt_oth_2("Enter - Szybki reset", font);
+        //* od nowa / zapisz i wyjdz
+            sf::Text txt_oth_1("Esc, (x) - Wyjdz", font);
+            //// sf::Text txt_oth_2("Enter - Szybki reset", font);
+            sf::Text txt_oth_2("", font);
 
             txt_oth_1.setCharacterSize(22);
             txt_oth_2.setCharacterSize(22);
@@ -378,11 +379,13 @@ int main(int argc, const char * argv[]){
 
             //krzyzyk na oknie
             if(event.type == sf::Event::Closed){
+            cout << "pkt: " << to_string(pkt) << endl;
                 window.close();
             }
             else if(event.type == sf::Event::KeyPressed){
                 switch(event.key.code){
                     case sf::Keyboard::Escape:
+                        cout << "pkt: " << to_string(pkt) << endl;
                         window.close();
                         break;
                     // q, w, e - zmienia colory

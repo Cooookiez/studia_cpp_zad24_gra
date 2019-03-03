@@ -1,37 +1,12 @@
-# studia c++ zad_24 - gra
+# studia c++ zad_24 - gra sfml
 
 ## Zasady gry
 * Gracz posiada 3 rodzaje (kolory) broni na 3 rodzaje (kolory) przeciwników
-  * Jeśli broń i trafiony nią przeciwnik mają ten sam kolor, przeciwnikowi dodaje się hp
-  * Jeśli kolor się rózni hp się odejmuje
-
-## gra zapisuje
-* [ ] Ilosc serc
-* [ ] Ilość pkt
-* przeciwnikow
-  * [ ] x
-  * [ ] y
-  * [ ] v
-  * [ ] scale
-  * [ ] c_color
-* pocisk
-  * [ ] x
-  * [ ] y
-  * [ ] vx
-  * [ ] vy
-  * [ ] r
-  * [ ] sf::Color
-  * [ ] c_color
-* postac
-  * [ ] x
-  * [ ] y
-  * [ ] dx
-  * [ ] dy
-  * [ ] v
-  * [ ] kierunek
+  * Jeśli broń trafiony nią przeciwnik mają ten sam kolor, przeciwnikowi dodaje się hp
+  * Jeśli kolor broni się rózni hp się odejmuje
+  * jeśli przeciwnik najedzie na postać, przeciwnik znika, a hp postaci odejmuje się o 0.5 serca
 
 ## Odpalenie
-
 
 Komendy pokoleji
 ~~~bash
