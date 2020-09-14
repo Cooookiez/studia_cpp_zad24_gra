@@ -2,3 +2,5 @@
 *.o
 
 sfml-app-1
+
+.DS_Store

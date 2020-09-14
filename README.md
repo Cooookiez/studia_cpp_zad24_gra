@@ -1,5 +1,7 @@
 # studia c++ zad_24 - gra sfml
 
+![kosmogierka.gif](./space.gif)
+
 ## Zasady gry
 * Gracz posiada 3 rodzaje (kolory) broni na 3 rodzaje (kolory) przeciwników
   * Jeśli broń trafiony nią przeciwnik mają ten sam kolor, przeciwnikowi dodaje się hp
